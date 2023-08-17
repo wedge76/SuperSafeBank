@@ -42,10 +42,10 @@ public class SQLAggregateRepository<TA, TKey> : IAggregateRepository<TA, TKey>
         await _tableCreator.EnsureTableAsync<TA, TKey>(cancellationToken)
                            .ConfigureAwait(false);
 
-        using var dbConn = new SqlConnection(_dbConnString);
-        await dbConn.OpenAsync().ConfigureAwait(false);
+        await using var dbConn = new SqlConnection(_dbConnString);
+        await dbConn.OpenAsync(cancellationToken).ConfigureAwait(false);
 
-        using var transaction = dbConn.BeginTransaction();
+        await using var transaction = dbConn.BeginTransaction();
 
         try
         {
@@ -85,8 +85,8 @@ public class SQLAggregateRepository<TA, TKey> : IAggregateRepository<TA, TKey>
                          WHERE aggregateId = @aggregateId
                          ORDER BY aggregateVersion ASC";
 
-        using var dbConn = new SqlConnection(_dbConnString);
-        await dbConn.OpenAsync().ConfigureAwait(false);
+        await using var dbConn = new SqlConnection(_dbConnString);
+        await dbConn.OpenAsync(cancellationToken).ConfigureAwait(false);
 
         var aggregateEvents = await dbConn.QueryAsync<AggregateEvent>(sql, new { aggregateId = key })
                                           .ConfigureAwait(false);

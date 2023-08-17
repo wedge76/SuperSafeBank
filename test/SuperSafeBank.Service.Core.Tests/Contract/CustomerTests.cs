@@ -46,9 +46,9 @@ namespace SuperSafeBank.Service.Core.Tests.Contract
             response.StatusCode.Should().Be(HttpStatusCode.OK);
 
             var result = await response.Content.ReadAsAsync<Common.Queries.CustomerDetails>();
-            
+
             result.Id.Should().Be(customerDetails.Id);
-            result.Firstname.Should().Be(customerDetails.Firstname);            
+            result.Firstname.Should().Be(customerDetails.Firstname);
             result.Lastname.Should().Be(customerDetails.Lastname);
             result.Email.Should().Be(customerDetails.Email);
             result.Accounts.Should().NotBeNull().And.BeEmpty();
@@ -102,7 +102,7 @@ namespace SuperSafeBank.Service.Core.Tests.Contract
         }
 
         [Fact]
-        public async Task Post_should_not_create_customer_if_email_already_exists() 
+        public async Task Post_should_not_create_customer_if_email_already_exists()
         {
             var payload = new
             {
