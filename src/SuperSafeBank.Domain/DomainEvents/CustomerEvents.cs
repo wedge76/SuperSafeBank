@@ -23,12 +23,9 @@ namespace SuperSafeBank.Domain.DomainEvents
             public string Lastname { get; init; }
             public Email Email { get; init; }
 
-            public override void Apply(Customer aggregate)
+            public override void Apply(Customer customer)
             {
-                //aggregate.Id = AggregateId;
-                aggregate.Firstname = Firstname;
-                aggregate.Lastname = Lastname;
-                aggregate.Email = Email;
+                customer.Create(this);
             }
         }
 
@@ -43,9 +40,9 @@ namespace SuperSafeBank.Domain.DomainEvents
 
             public Guid AccountId { get; init; }
 
-            public override void Apply(Customer aggregate)
+            public override void Apply(Customer customer)
             {
-                aggregate.AddAccount(AccountId);
+                customer.AddAccount(AccountId);
             }
         }
     }

@@ -1,73 +1,81 @@
 ﻿using System;
 using SuperSafeBank.Common.Models;
 
-namespace SuperSafeBank.Domain.DomainEvents
+namespace SuperSafeBank.Domain.DomainEvents;
+
+public static class AccountEvents
 {
-    public static class AccountEvents
+    public record AccountCreated : BaseDomainEvent<Account, Guid>
     {
-        public record AccountCreated : BaseDomainEvent<Account, Guid>
+        /// <summary>
+        /// for deserialization
+        /// </summary>
+        private AccountCreated()
         {
-            /// <summary>
-            /// for deserialization
-            /// </summary>
-            private AccountCreated() { }
-
-            public AccountCreated(Account account, Customer owner, Currency currency) : base(account)
-            {
-                if (owner is null)
-                    throw new ArgumentNullException(nameof(owner));
-
-                OwnerId = owner.Id;
-                Currency = currency ?? throw new ArgumentNullException(nameof(currency));
-            }
-
-            public Guid OwnerId { get; init; }
-            public Currency Currency { get; init; }
-
-            public override void Apply(Account account)
-            {
-                throw new NotImplementedException();
-            }
         }
 
-        public record Deposit : BaseDomainEvent<Account, Guid>
+        public AccountCreated(Account account, Customer owner, Currency currency) : base(account)
         {
-            /// <summary>
-            /// for deserialization
-            /// </summary>
-            private Deposit() { }
-
-            public Deposit(Account account, Money amount) : base(account)
+            if (owner is null)
             {
-                Amount = amount;
+                throw new ArgumentNullException(nameof(owner));
             }
 
-            public Money Amount { get; init; }
-
-            public override void Apply(Account account)
-            {
-                throw new NotImplementedException();
-            }
+            OwnerId = owner.Id;
+            Currency = currency ?? throw new ArgumentNullException(nameof(currency));
         }
 
-        public record Withdrawal : BaseDomainEvent<Account, Guid>
+        public Guid OwnerId { get; init; }
+
+        public Currency Currency { get; init; }
+
+        public override void Apply(Account account)
         {
-            /// <summary>
-            /// for deserialization
-            /// </summary>
-            private Withdrawal() { }
+            account.Create(this);
+        }
+    }
 
-            public Withdrawal(Account account, Money amount) : base(account)
-            {
-                Amount = amount;
-            }
+    public record Deposit : BaseDomainEvent<Account, Guid>
+    {
+        /// <summary>
+        /// for deserialization
+        /// </summary>
+        private Deposit()
+        {
+        }
 
-            public Money Amount { get; init; }
+        public Deposit(Account account, Money amount) : base(account)
+        {
+            Amount = amount;
+        }
 
-            public override void Apply(Account account)
-            {
-                throw new NotImplementedException();
-            }
+        public Money Amount { get; init; }
+
+        public override void Apply(Account account)
+        {
+            account.AddDeposit(Amount);
+        }
+    }
+
+    public record Withdrawal : BaseDomainEvent<Account, Guid>
+    {
+        /// <summary>
+        /// for deserialization
+        /// </summary>
+        private Withdrawal()
+        {
+        }
+
+        public Withdrawal(Account account, Money amount) : base(account)
+        {
+            Amount = amount;
+        }
+
+        public Money Amount { get; init; }
+
+        public override void Apply(Account account)
+        {
+            account.Withdraw(Amount);
         }
     }
 }

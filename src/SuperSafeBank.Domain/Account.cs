@@ -3,72 +3,87 @@ using SuperSafeBank.Common.Models;
 using SuperSafeBank.Domain.DomainEvents;
 using SuperSafeBank.Domain.Services;
 
-namespace SuperSafeBank.Domain
+namespace SuperSafeBank.Domain;
+
+public record Account : BaseAggregateRoot<Account, Guid>
 {
-    public record Account : BaseAggregateRoot<Account, Guid>
+    private Account()
     {
-        private Account() { }
+    }
 
-        public Account(Guid id, Customer owner, Currency currency) : base(id)
+    public Account(Guid id, Customer owner, Currency currency) : base(id)
+    {
+        if (owner == null)
         {
-            if (owner == null)
-                throw new ArgumentNullException(nameof(owner));
-            if (currency == null)
-                throw new ArgumentNullException(nameof(currency));
-
-            this.Append(new AccountEvents.AccountCreated(this, owner, currency));
+            throw new ArgumentNullException(nameof(owner));
         }
 
-        public Guid OwnerId { get; private set; }
-        public Money Balance { get; private set; }
-
-        public void Withdraw(Money amount, ICurrencyConverter currencyConverter)
+        if (currency == null)
         {
-            if (amount.Value < 0)
-                throw new ArgumentOutOfRangeException(nameof(amount),"amount cannot be negative");
-
-            var normalizedAmount = currencyConverter.Convert(amount, this.Balance.Currency);
-            if (normalizedAmount.Value > this.Balance.Value)
-                throw new AccountTransactionException($"unable to withdrawn {normalizedAmount} from account {this.Id}", this);
-
-            this.Append(new AccountEvents.Withdrawal(this, amount));
+            throw new ArgumentNullException(nameof(currency));
         }
 
-        public void Deposit(Money amount, ICurrencyConverter currencyConverter)
+        Append(new AccountEvents.AccountCreated(this, owner, currency));
+    }
+
+    public Guid OwnerId { get; private set; }
+
+    public Money Balance { get; private set; }
+
+    public void Withdraw(Money amount, ICurrencyConverter currencyConverter)
+    {
+        if (amount.Value < 0)
         {
-            if(amount.Value < 0)
-                throw new ArgumentOutOfRangeException(nameof(amount), "amount cannot be negative");
-
-            var normalizedAmount = currencyConverter.Convert(amount, this.Balance.Currency);
-
-            this.Append(new AccountEvents.Deposit(this, normalizedAmount));
+            throw new ArgumentOutOfRangeException(nameof(amount), "amount cannot be negative");
         }
 
-        protected override void When(IDomainEvent<Account, Guid> @event)
+        var normalizedAmount = currencyConverter.Convert(amount, Balance.Currency);
+        if (normalizedAmount.Value > Balance.Value)
         {
-            @event.Apply(this);
-
-            switch (@event)
-            {
-                case AccountEvents.AccountCreated c:
-                    this.Id = c.AggregateId;
-                    this.Balance = Money.Zero(c.Currency);
-                    this.OwnerId = c.OwnerId;
-                    break;
-                case AccountEvents.Withdrawal w:
-                    this.Balance = this.Balance.Subtract(w.Amount);
-                    break;
-                case AccountEvents.Deposit d:
-                    this.Balance = this.Balance.Add(d.Amount);
-                    break;
-            }
+            throw new AccountTransactionException($"unable to withdrawn {normalizedAmount} from account {Id}", this);
         }
 
-        public static Account Create(Guid accountId, Customer owner, Currency currency)
+        Append(new AccountEvents.Withdrawal(this, amount));
+    }
+
+    public void Deposit(Money amount, ICurrencyConverter currencyConverter)
+    {
+        if (amount.Value < 0)
         {
-            var account = new Account(accountId, owner, currency);
-            owner.AddAccount(account);
-            return account;
+            throw new ArgumentOutOfRangeException(nameof(amount), "amount cannot be negative");
         }
+
+        var normalizedAmount = currencyConverter.Convert(amount, Balance.Currency);
+
+        Append(new AccountEvents.Deposit(this, normalizedAmount));
+    }
+
+    protected override void When(IDomainEvent<Account, Guid> @event)
+    {
+        @event.Apply(this);
+    }
+
+    public static Account Create(Guid accountId, Customer owner, Currency currency)
+    {
+        var account = new Account(accountId, owner, currency);
+        owner.AddAccount(account);
+        return account;
+    }
+
+    internal void AddDeposit(Money amount)
+    {
+        Balance = Balance.Add(amount);
+    }
+
+    internal void Withdraw(Money amount)
+    {
+        Balance = Balance.Subtract(amount);
+    }
+
+    internal void Create(AccountEvents.AccountCreated accountCreated)
+    {
+        Id = accountCreated.AggregateId;
+        Balance = Money.Zero(accountCreated.Currency);
+        OwnerId = accountCreated.OwnerId;
     }
 }
