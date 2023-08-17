@@ -16,9 +16,16 @@ namespace SuperSafeBank.Service.Core.Persistence.EventStore
                 Email = email;
                 CustomerId = customerId;
             }
-            
+
             public string Email { get; init; }
             public Guid CustomerId { get; init; }
+
+            public override void Apply(CustomerEmail aggregate)
+            {
+                //aggregate.Id = AggregateId;
+                aggregate.Email = Email;
+                aggregate.CustomerId = CustomerId;
+            }
         }
     }
 }

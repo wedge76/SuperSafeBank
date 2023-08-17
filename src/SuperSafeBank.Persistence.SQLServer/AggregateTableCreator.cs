@@ -21,7 +21,7 @@ namespace SuperSafeBank.Persistence.SQLServer
         }
 
         public async Task EnsureTableAsync<TA, TKey>(CancellationToken cancellationToken = default)
-            where TA : class, IAggregateRoot<TKey>
+            where TA : class, IAggregateRoot<TA, TKey>
         {
             var tableName = this.GetTableName<TA, TKey>();
             if (_cache.Contains(tableName))
@@ -63,7 +63,7 @@ namespace SuperSafeBank.Persistence.SQLServer
         }
 
         public string GetTableName<TA, TKey>()
-            where TA : class, IAggregateRoot<TKey>
+            where TA : class, IAggregateRoot<TA, TKey>
         {
             var aggregateType = typeof(TA);
             var aggregateName = aggregateType.Name;

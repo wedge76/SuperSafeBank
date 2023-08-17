@@ -31,7 +31,7 @@ namespace SuperSafeBank.Persistence.Azure.Tests.Integration.Fixtures
         }
 
         public async Task<TableClient> CreateTableClientAsync<TA, TKey>() 
-            where TA : IAggregateRoot<TKey>
+            where TA : IAggregateRoot<TA, TKey>
         {
             var client = new TableClient(_connStr, $"{_tablePrefix}{nameof(TA)}{DateTime.UtcNow.Ticks}");
             await client.CreateIfNotExistsAsync();

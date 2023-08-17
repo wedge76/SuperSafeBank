@@ -23,6 +23,11 @@ namespace SuperSafeBank.Domain.DomainEvents
 
             public Guid OwnerId { get; init; }
             public Currency Currency { get; init; }
+
+            public override void Apply(Account account)
+            {
+                throw new NotImplementedException();
+            }
         }
 
         public record Deposit : BaseDomainEvent<Account, Guid>
@@ -38,6 +43,11 @@ namespace SuperSafeBank.Domain.DomainEvents
             }
 
             public Money Amount { get; init; }
+
+            public override void Apply(Account account)
+            {
+                throw new NotImplementedException();
+            }
         }
 
         public record Withdrawal : BaseDomainEvent<Account, Guid>
@@ -53,6 +63,11 @@ namespace SuperSafeBank.Domain.DomainEvents
             }
 
             public Money Amount { get; init; }
+
+            public override void Apply(Account account)
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }

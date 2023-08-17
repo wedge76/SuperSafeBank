@@ -2,14 +2,14 @@
 
 namespace SuperSafeBank.Common.Models
 {
-    public abstract record BaseDomainEvent<TA, TKey> : IDomainEvent<TKey>
-        where TA : IAggregateRoot<TKey>
+    public abstract record BaseDomainEvent<TA, TKey> : IDomainEvent<TA, TKey>
+        where TA : IAggregateRoot<TA, TKey>
     {
         /// <summary>
         /// for deserialization
         /// </summary>
         protected BaseDomainEvent() { }
-                
+
         protected BaseDomainEvent(TA aggregateRoot)
         {
             if(aggregateRoot is null)
@@ -23,5 +23,7 @@ namespace SuperSafeBank.Common.Models
         public long AggregateVersion { get; private set; }
         public TKey AggregateId { get; private set; }
         public DateTime When { get; private set; }
+
+        public abstract void Apply(TA aggregate);
     }
 }

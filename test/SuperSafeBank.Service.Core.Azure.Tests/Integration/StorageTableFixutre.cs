@@ -49,7 +49,7 @@ namespace SuperSafeBank.Service.Core.Azure.Tests
             return ctx;
         }
 
-        public IAggregateRepository<TA, TKey> CreateRepository<TA, TKey>() where TA : class, IAggregateRoot<TKey>
+        public IAggregateRepository<TA, TKey> CreateRepository<TA, TKey>() where TA : class, IAggregateRoot<TA, TKey>
         {
             var tableName = $"{_tablePrefix}{nameof(TA)}{DateTime.UtcNow.Ticks}";
             var client = new TableClient(_connStr, tableName);

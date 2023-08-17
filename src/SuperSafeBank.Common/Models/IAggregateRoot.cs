@@ -2,10 +2,10 @@
 
 namespace SuperSafeBank.Common.Models
 {
-    public interface IAggregateRoot<out TKey> : IEntity<TKey>
+    public interface IAggregateRoot<TA, out TKey> : IEntity<TKey> where TA : IAggregateRoot<TA, TKey>
     {
         long Version { get; }
-        IReadOnlyCollection<IDomainEvent<TKey>> Events { get; }
+        IReadOnlyCollection<IDomainEvent<TA, TKey>> Events { get; }
         void ClearEvents();
     }
 }

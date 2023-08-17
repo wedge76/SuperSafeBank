@@ -24,11 +24,11 @@ namespace SuperSafeBank.Persistence.Azure
         }
 
         private static IServiceCollection AddEventsRepository<TA, TK>(this IServiceCollection services, EventsRepositoryConfig config)
-            where TA : class, IAggregateRoot<TK>
+            where TA : class, IAggregateRoot<TA, TK>
         {
             var aggregateType = typeof(TA);
             var tableName = $"{config.TablePrefix}{aggregateType.Name}Events";
-            
+
             return services.AddSingleton<IAggregateRepository<TA, TK>>(ctx =>
             {
                 var client = new TableClient(config.ConnectionString, tableName);

@@ -1,23 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
 
 namespace SuperSafeBank.Common.Models
 {
-    public abstract record BaseAggregateRoot<TA, TKey> : BaseEntity<TKey>, IAggregateRoot<TKey>
-        where TA : class, IAggregateRoot<TKey>
+    public abstract record BaseAggregateRoot<TA, TKey> : BaseEntity<TKey>, IAggregateRoot<TA, TKey>
+        where TA : class, IAggregateRoot<TA, TKey>
     {
-        private readonly Queue<IDomainEvent<TKey>> _events = new Queue<IDomainEvent<TKey>>();
+        private readonly Queue<IDomainEvent<TA, TKey>> _events = new Queue<IDomainEvent<TA, TKey>>();
 
         protected BaseAggregateRoot() { }
-        
+
         protected BaseAggregateRoot(TKey id) : base(id)
         {
         }
 
-        public IReadOnlyCollection<IDomainEvent<TKey>> Events => _events.ToImmutableArray();
+        public IReadOnlyCollection<IDomainEvent<TA, TKey>> Events => _events.ToArray();
 
         public long Version { get; private set; }
 
@@ -26,16 +25,16 @@ namespace SuperSafeBank.Common.Models
             _events.Clear();
         }
 
-        protected void Append(IDomainEvent<TKey> @event)
+        protected void Append(IDomainEvent<TA, TKey> @event)
         {
             _events.Enqueue(@event);
-           
+
             this.When(@event);
 
             this.Version++;
         }
 
-        protected abstract void When(IDomainEvent<TKey> @event);
+        protected abstract void When(IDomainEvent<TA, TKey> @event);
 
         #region Factory
 
@@ -50,14 +49,14 @@ namespace SuperSafeBank.Common.Models
                 throw new InvalidOperationException($"Unable to find required private parameterless constructor for Aggregate of type '{aggregateType.Name}'");
         }
 
-        public static TA Create(IEnumerable<IDomainEvent<TKey>> events)
+        public static TA Create(IEnumerable<IDomainEvent<TA, TKey>> events)
         {
             if(null == events || !events.Any())
                 throw new ArgumentNullException(nameof(events));
             var result = (TA)CTor.Invoke(new object[0]);
 
             var baseAggregate =  result as BaseAggregateRoot<TA, TKey>;
-            if (baseAggregate != null) 
+            if (baseAggregate != null)
                 foreach (var @event in events)
                     baseAggregate.Append(@event);
 

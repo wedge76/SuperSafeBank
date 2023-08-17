@@ -4,8 +4,8 @@ namespace SuperSafeBank.Common
 {
     public interface IEventSerializer
     {
-        IDomainEvent<TKey> Deserialize<TKey>(string type, byte[] data);
-        IDomainEvent<TKey> Deserialize<TKey>(string type, string data);
-        byte[] Serialize<TKey>(IDomainEvent<TKey> @event);
+        IDomainEvent<TA, TKey> Deserialize<TA, TKey>(string type, byte[] data) where TA : IAggregateRoot<TA, TKey>;
+        IDomainEvent<TA, TKey> Deserialize<TA, TKey>(string type, string data) where TA : IAggregateRoot<TA, TKey>;
+        byte[] Serialize<TA, TKey>(IDomainEvent<TA, TKey> @event) where TA : IAggregateRoot<TA, TKey>;
     }
 }

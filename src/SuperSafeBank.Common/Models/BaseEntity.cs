@@ -10,5 +10,7 @@ namespace SuperSafeBank.Common.Models
         protected BaseEntity(TKey id) => Id = id;
 
         public TKey Id { get; protected set; }
+
+
     }
 }

@@ -16,19 +16,12 @@ namespace SuperSafeBank.Service.Core.Persistence.EventStore
             base.Append(new CustomerEmailEvents.CustomerEmailCreated(this, email, customerId));
         }
 
-        public string Email { get; private set; }
-        public Guid CustomerId { get; private set;  }
+        public string Email { get; internal set; }
+        public Guid CustomerId { get; internal set;  }
 
-        protected override void When(IDomainEvent<string> @event)
+        protected override void When(IDomainEvent<CustomerEmail, string> @event)
         {
-            switch (@event)
-            {
-                case CustomerEmailEvents.CustomerEmailCreated c:
-                    this.Id = c.AggregateId;
-                    this.Email = c.Email;
-                    this.CustomerId = c.CustomerId;
-                    break;
-            }
+            @event.Apply(this);
         }
-    }   
+    }
 }

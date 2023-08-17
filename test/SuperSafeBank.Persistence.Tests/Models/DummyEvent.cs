@@ -12,5 +12,10 @@ namespace SuperSafeBank.Persistence.Tests.Models
         }
 
         public string Type { get; private set; }
+
+        public override void Apply(DummyAggregate aggregate)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

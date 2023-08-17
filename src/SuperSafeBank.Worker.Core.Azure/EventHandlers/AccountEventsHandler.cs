@@ -23,8 +23,8 @@ namespace SuperSafeBank.Worker.Core.Azure.EventHandlers
 
         public AccountEventsHandler(
             IAggregateRepository<Customer, Guid> customersRepo,
-            IAggregateRepository<Account, Guid> accountsRepo, 
-            IViewsContext dbContext, 
+            IAggregateRepository<Account, Guid> accountsRepo,
+            IViewsContext dbContext,
             ILogger<AccountEventsHandler> logger)
         {
             _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));

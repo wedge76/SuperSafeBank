@@ -10,16 +10,16 @@ namespace SuperSafeBank.Domain
         private readonly HashSet<Guid> _accounts = new();
 
         private Customer() { }
-        
+
         public Customer(Guid id, string firstname, string lastname, Email email) : base(id)
         {
             if(string.IsNullOrWhiteSpace(firstname))
                 throw new ArgumentNullException(nameof(firstname));
             if (string.IsNullOrWhiteSpace(lastname))
                 throw new ArgumentNullException(nameof(lastname));
-            if (email is null)            
+            if (email is null)
                 throw new ArgumentNullException(nameof(email));
-            
+
             this.Append(new CustomerEvents.CustomerCreated(this, firstname, lastname, email));
         }
 
@@ -27,20 +27,22 @@ namespace SuperSafeBank.Domain
         {
             if (account is null)
                 throw new ArgumentNullException(nameof(account));
-            
+
             if (_accounts.Contains(account.Id))
                 return;
 
             this.Append(new CustomerEvents.AccountAdded(this, account.Id));
         }
 
-        public string Firstname { get; private set; }
-        public string Lastname { get; private set; }
-        public Email Email { get; private set; }
+        public string Firstname { get; set; }
+        public string Lastname { get; internal set; }
+        public Email Email { get; internal set; }
         public IReadOnlyCollection<Guid> Accounts => _accounts;
 
-        protected override void When(IDomainEvent<Guid> @event)
+        protected override void When(IDomainEvent<Customer, Guid> @event)
         {
+            @event.Apply(this);
+
             switch (@event)
             {
                 case CustomerEvents.CustomerCreated c:
@@ -58,6 +60,11 @@ namespace SuperSafeBank.Domain
         public static Customer Create(Guid customerId, string firstName, string lastName, string email)
         {
             return new Customer(customerId, firstName, lastName, new Email(email));
+        }
+
+        internal void AddAccount(Guid accountId)
+        {
+            _accounts.Add(accountId);
         }
     }
 }

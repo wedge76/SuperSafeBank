@@ -1,6 +1,9 @@
 ﻿using SuperSafeBank.Domain.Services;
 using System;
 
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("SuperSafeBank.Persistence.Tests")]
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("SuperSafeBank.Domain.Tests")]
+
 namespace SuperSafeBank.Domain
 {
     public record Money
@@ -16,8 +19,8 @@ namespace SuperSafeBank.Domain
 
         public Money Subtract(Money other, ICurrencyConverter converter = null)
         {
-            if (other is null)            
-                throw new ArgumentNullException(nameof(other));            
+            if (other is null)
+                throw new ArgumentNullException(nameof(other));
 
             if (other.Currency != this.Currency)
             {

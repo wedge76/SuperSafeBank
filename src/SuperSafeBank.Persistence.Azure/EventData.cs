@@ -9,15 +9,15 @@ namespace SuperSafeBank.Persistence.Azure
     public record EventData : ITableEntity
     {
         /// <summary>
-        /// this is the Aggregate id        
+        /// this is the Aggregate id
         /// </summary>
         public string PartitionKey { get; set; }
-        
+
         /// <summary>
         /// aggregate version on the event
         /// </summary>
-        public string RowKey { get; set; } 
-        
+        public string RowKey { get; set; }
+
         /// <summary>
         /// the event type
         /// </summary>
@@ -32,11 +32,11 @@ namespace SuperSafeBank.Persistence.Azure
         /// aggregate version on the event
         /// </summary>
         public long AggregateVersion { get; init; }
-        
+
         public DateTimeOffset? Timestamp { get; set; }
         public ETag ETag { get; set; }
 
-        public static EventData Create<TKey>(IDomainEvent<TKey> @event, IEventSerializer eventSerializer)
+        public static EventData Create<TA, TKey>(IDomainEvent<TA, TKey> @event, IEventSerializer eventSerializer) where TA : IAggregateRoot<TA, TKey>
         {
             if (@event is null)
                 throw new ArgumentNullException(nameof(@event));
@@ -48,7 +48,7 @@ namespace SuperSafeBank.Persistence.Azure
             var eventType = @event.GetType();
 
             return new EventData()
-            {                
+            {
                 PartitionKey = @event.AggregateId.ToString(),
                 RowKey = @event.AggregateVersion.ToString(),
                 AggregateVersion = @event.AggregateVersion,
