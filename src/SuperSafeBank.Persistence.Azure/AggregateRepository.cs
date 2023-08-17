@@ -94,7 +94,7 @@ public class AggregateRepository<TA, TKey> : IAggregateRepository<TA, TKey>
             return null;
         }
 
-        var result = BaseAggregateRoot<TA, TKey>.Create(events.OrderBy(e => e.AggregateVersion));
+        var result = BaseAggregateRoot<TA, TKey>.Create(events.OrderBy(e => e.AggregateVersion).ToList());
         return result;
     }
 }

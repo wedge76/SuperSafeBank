@@ -55,7 +55,7 @@ public abstract record BaseAggregateRoot<TA, TKey> : BaseEntity<TKey>, IAggregat
         }
     }
 
-    public static TA Create(IEnumerable<IDomainEvent<TA, TKey>> events)
+    public static TA Create(ICollection<IDomainEvent<TA, TKey>> events)
     {
         if (null == events || !events.Any())
         {

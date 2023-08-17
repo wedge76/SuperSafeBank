@@ -15,7 +15,7 @@ namespace SuperSafeBank.Domain.Tests
         {
             var customer = Customer.Create(Guid.NewGuid(), "lorem", "ipsum", "test@test.com");
 
-            var sut = BaseAggregateRoot<Customer, Guid>.Create(customer.Events);
+            var sut = BaseAggregateRoot<Customer, Guid>.Create(customer.Events.ToList());
             sut.Should().NotBeNull();
             sut.Id.Should().Be(customer.Id);
             sut.Firstname.Should().Be(customer.Firstname);

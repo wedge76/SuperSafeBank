@@ -42,6 +42,9 @@ public class SQLAggregateRepository<TA, TKey> : IAggregateRepository<TA, TKey>
         await _tableCreator.EnsureTableAsync<TA, TKey>(cancellationToken)
                            .ConfigureAwait(false);
 
+        var entities = aggregateRoot.Events.Select(evt => AggregateEvent.Create(evt, _eventSerializer))
+                                    .ToList();
+
         await using var dbConn = new SqlConnection(_dbConnString);
         await dbConn.OpenAsync(cancellationToken).ConfigureAwait(false);
 
@@ -60,8 +63,6 @@ public class SQLAggregateRepository<TA, TKey> : IAggregateRepository<TA, TKey>
             var sql = $@"INSERT INTO {tableName} (aggregateId, aggregateVersion, eventType, data, timestamp)
                          VALUES (@aggregateId, @aggregateVersion, @eventType, @data, @timestamp);";
 
-            var entities = aggregateRoot.Events.Select(evt => AggregateEvent.Create(evt, _eventSerializer))
-                                        .ToList();
             await dbConn.ExecuteAsync(sql, entities, transaction)
                         .ConfigureAwait(false);
 
@@ -88,23 +89,23 @@ public class SQLAggregateRepository<TA, TKey> : IAggregateRepository<TA, TKey>
         await using var dbConn = new SqlConnection(_dbConnString);
         await dbConn.OpenAsync(cancellationToken).ConfigureAwait(false);
 
-        var aggregateEvents = await dbConn.QueryAsync<AggregateEvent>(sql, new { aggregateId = key })
+        var queryResult = await dbConn.QueryAsync<AggregateEvent>(sql, new { aggregateId = key })
                                           .ConfigureAwait(false);
-        if (aggregateEvents?.Any() == false)
+        var aggregatesEvents = queryResult.ToList();
+        if (aggregatesEvents.Any())
         {
             return null;
         }
 
         var events = new List<IDomainEvent<TA, TKey>>();
 
-        foreach (var aggregateEvent in aggregateEvents)
+        foreach (var aggregateEvent in aggregatesEvents)
         {
             var @event = _eventSerializer.Deserialize<TA, TKey>(aggregateEvent.EventType, aggregateEvent.Data);
             events.Add(@event);
         }
 
-        var result = BaseAggregateRoot<TA, TKey>.Create(events.OrderBy(e => e.AggregateVersion));
-        return result;
+        return BaseAggregateRoot<TA, TKey>.Create(events.OrderBy(e => e.AggregateVersion).ToList());
     }
 
     private async Task<long?> GetLastAggregateVersionAsync(TA aggregateRoot, SqlConnection dbConn, IDbTransaction transaction)

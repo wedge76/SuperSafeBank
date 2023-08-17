@@ -22,7 +22,7 @@ namespace SuperSafeBank.Domain.Tests
             account.Withdraw(new Money(Currency.CanadianDollar, 4), currencyConverter);
             account.Deposit(new Money(Currency.CanadianDollar, 71), currencyConverter);
 
-            var instance = BaseAggregateRoot<Account, Guid>.Create(account.Events);
+            var instance = BaseAggregateRoot<Account, Guid>.Create(account.Events.ToList());
             instance.Should().NotBeNull();
             instance.Id.Should().Be(account.Id);
             instance.OwnerId.Should().Be(customer.Id);
@@ -58,7 +58,7 @@ namespace SuperSafeBank.Domain.Tests
 
             var accountId = Guid.NewGuid();
             var sut = new Account(accountId, customer, Currency.CanadianDollar);
-            
+
             sut.Events.Count.Should().Be(1);
 
             var createdEvent = sut.Events.First() as AccountEvents.AccountCreated;
@@ -78,7 +78,7 @@ namespace SuperSafeBank.Domain.Tests
             var currencyConverter = new FakeCurrencyConverter();
 
             sut.Balance.Should().Be(Money.Zero(Currency.CanadianDollar));
-           
+
             sut.Deposit(new Money(Currency.CanadianDollar, 1), currencyConverter);
             sut.Balance.Should().Be(new Money(Currency.CanadianDollar, 1));
             sut.Version.Should().Be(2);
@@ -96,7 +96,7 @@ namespace SuperSafeBank.Domain.Tests
             var currencyConverter = new FakeCurrencyConverter();
 
             sut.Balance.Should().Be(Money.Zero(Currency.CanadianDollar));
-            
+
             Assert.Throws<AccountTransactionException>(() => sut.Withdraw(new Money(Currency.CanadianDollar, 1), currencyConverter));
         }
 

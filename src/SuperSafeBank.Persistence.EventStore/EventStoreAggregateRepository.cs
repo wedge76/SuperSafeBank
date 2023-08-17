@@ -91,7 +91,7 @@ public class EventStoreAggregateRepository<TA, TKey> : IAggregateRepository<TA, 
             return null;
         }
 
-        var result = BaseAggregateRoot<TA, TKey>.Create(events.OrderBy(e => e.AggregateVersion));
+        var result = BaseAggregateRoot<TA, TKey>.Create(events.OrderBy(e => e.AggregateVersion).ToList());
 
         return result;
     }
